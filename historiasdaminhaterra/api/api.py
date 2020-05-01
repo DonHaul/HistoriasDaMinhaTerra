@@ -4,7 +4,7 @@ import sys
 import json 
 
 
-app = Flask(__name__)
+app = Flask(__name__,static_folder='./build',static_url_path='/')
 
 domains = ['http://www.publico.pt/']
 #[, 'http://www.dn.pt/', 'http://www.rtp.pt/', 'http://www.cmjornal.xl.pt/', 'http://www.iol.pt/', 'http://www.tvi24.iol.pt/', 'http://noticias.sapo.pt/', 'http://expresso.sapo.pt/', 'http://sol.sapo.pt/', 'http://www.jornaldenegocios.pt/', 'http://abola.pt/', 'http://www.jn.pt/', 'http://sicnoticias.sapo.pt/', 'http://www.lux.iol.pt/', 'http://www.ionline.pt/', 'http://news.google.pt/', 'http://www.dinheirovivo.pt/', 'http://www.aeiou.pt/', 'http://www.tsf.pt/', 'http://meiosepublicidade.pt/', 'http://www.sabado.pt/', 'http://dnoticias.pt/', 'http://economico.sapo.pt/' ]
@@ -31,20 +31,23 @@ class State(object):
         self.processesnumber = 4
         self.isrunning=False
         self.chunks=[]
-        self.landstoget=20
         self.count=0
+        self.initiallandstoget=20
+        self.landstoget=self.initiallandstoget
 
 state = State()
 
 
 
-@app.route('/time')
+    
+
+@app.route('/api/time')
 def get_time():
     return {'time': time.time()}
 
 
-@app.route('/lugares/<up>/<right>/<left>/<down>/<landtype>')
-@app.route('/lugares/<up>/<right>/<left>/<down>')
+@app.route('/api/lugares/<up>/<right>/<left>/<down>/<landtype>')
+@app.route('/api/lugares/<up>/<right>/<left>/<down>')
 def get_landshere(up,right,left,down,landtype=None):
 
     if landtype==None:
@@ -56,22 +59,22 @@ def get_landshere(up,right,left,down,landtype=None):
 
     q = q[:-2] + ")"
 
-    result = ExecuteQuery(state.con, q)
+    result = ExecuteQuery(state, q)
 
     return {'payload' : result}
 
 
-@app.route('/lugar/<lugar>')
+@app.route('/api/lugar/<lugar>')
 def get_land(lugar):
     #up down left right
     query = "SELECT * from territories WHERE name like '%{}%' ".format(lugar)
-    placeinfo = ExecuteQuery(state.con,query)
+    placeinfo = ExecuteQuery(state,query)
 
     return {'payload' : placeinfo}
 
 
 
-@app.route('/contamehistorias')
+@app.route('/api/contamehistorias')
 def contammehistoriasapi(params=None):
     '''
     params must include, q, siteSearch, from and to
@@ -134,10 +137,11 @@ class MyPool(pool.Pool):
     Process = NoDaemonProcess
 
 
-@app.route('/artigosaqui')
+@app.route('/api/artigosaqui')
 def get_articleshere(params=None):
 
     state.chunks=[]
+    state.count=0
 
     #http://localhost:5000/artigosaqui?bounds=39.071611;-8.882339;38.604698;-9.691292
     if params is None:
@@ -152,7 +156,15 @@ def get_articleshere(params=None):
     up, left, right, down =params['bounds'].split(';')
 
     lands = get_landshere(up,right,left,down)
-    
+
+    print(lands, file=sys.stderr)
+    print(len(lands), file=sys.stderr)
+
+    if len(lands['payload'])<state.initiallandstoget:
+        state.landstoget=len(lands['payload'])
+    else:
+         state.landstoget=state.initiallandstoget
+
     lands = random.sample(lands['payload'],state.landstoget)       
     
     lands = [land for land in lands if Rewritelandstr(land)]
@@ -161,12 +173,21 @@ def get_articleshere(params=None):
     #DOENST WORK CAUSE ITS REWRITING PARAMS B4 CLOSING
     paramlist = [AddLandtoParam(params,land) for land in lands] 
 
-    def chunk_sequence():
+    def chunk_sequence(lands):
+
+        
+        print('DUMPING CHUNK',file=sys.stderr)
+        print('DUMPING CHUNK',lands,file=sys.stderr)
+        yield  json.dumps(lands) 
+        print('DUMPING CHUNKED',file=sys.stderr)
+
+
         while state.count< state.landstoget or len(state.chunks)==0:
             print('CHUNKS',state.count,'/',state.landstoget, file=sys.stderr)
             if(len(state.chunks)>0):
-
-                yield json.dumps(state.chunks) 
+                print("CHUNKIN")
+                print(state.chunks)
+                yield '{"payload":'  + json.dumps(state.chunks) + "},"
                 state.chunks=[]
             #if results available  yield
             time.sleep(0.5)
@@ -195,9 +216,25 @@ def get_articleshere(params=None):
     pool.close()
 
 
+    print('DUMPING READY',file=sys.stderr)
 
     #yield({'payload':results})
-    return Response(chunk_sequence(), mimetype='text/plain')
+    return Response(chunk_sequence(lands), mimetype='text/plain')
+
+
+@app.route('/api/stream')
+def get_stream(params=None):
+ 
+    print('CALLED STREAM',file=sys.stderr)
+    def chunk_sequence2():
+        count = 0
+        while count<100:
+            print(count,file=sys.stderr)
+            yield "[{'id': 1405, 'name': 'Loures', 'type': 'C', 'parent_id': -1, 'lat': 38.833333, 'lng': -9.166667}, {'id': 1787, 'name': 'Montijo', 'type': 'C', 'parent_id': -1, 'lat': 38.683333, 'lng': -8.9}, {'id': 82, 'name': 'Alcochete', 'type': 'C', 'parent_id': -1, 'lat': 38.75, 'lng': -8.966667}, {'id': 1874, 'name': 'Odivelas', 'type': 'C', 'parent_id': -1, 'lat': 38.8, 'lng': -9.183333}, {'id': 361, 'name': 'Arruda dos Vinhos', 'type': 'C', 'parent_id': -1, 'lat': 38.983333, 'lng': -9.083333}, {'id': 2601, 'name': 'Seixal', 'type': 'C', 'parent_id': -1, 'lat': 38.65, 'lng': -9.1}, {'id': 137, 'name': 'Almada','type': 'C', 'parent_id': -1, 'lat': 38.666667, 'lng': -9.15}, {'id': 467, 'name': 'Barreiro', 'type': 'C', 'parent_id': -1, 'lat': 38.666667, 'lng': -9.1}, {'id': 2661, 'name': 'Sintra', 'type': 'C', 'parent_id': -1, 'lat': 38.783333, 'lng': -9.416667}, {'id': 90, 'name': 'Alenquer', 'type': 'C', 'parent_id': -1, 'lat': 39.056111, 'lng': -9.008056}, {'id': 2673, 'name': 'Sobral de Monte Agra�o', 'type': 'C', 'parent_id': -1, 'lat': 39.019722, 'lng': -9.148889}, {'id': 710, 'name': 'Cascais', 'type': 'C', 'parent_id': -1, 'lat': 38.683333, 'lng': -9.416667}, {'id': 1698, 'name': 'Moita', 'type': 'C', 'parent_id': -1, 'lat': 38.65, 'lng': -9.0}, {'id': 3010, 'name': 'Vila Franca de Xira', 'type': 'C', 'parent_id': -1, 'lat': 38.95, 'lng': -8.983333}, {'id': 1493, 'name': 'Mafra', 'type': 'C', 'parent_id': -1, 'lat': 38.933333, 'lng': -9.333333}, {'id': 182, 'name': 'Amadora', 'type': 'C', 'parent_id': -1, 'lat': 38.75, 'lng': -9.233333}, {'id': 1878, 'name': 'Oeiras', 'type': 'C', 'parent_id': -1, 'lat': 38.695833, 'lng': -9.309167}, {'id': 1370, 'name': 'Lisboa', 'type': 'D', 'parent_id': -1, 'lat': 38.716667, 'lng': -9.133333}]\n"
+            
+            time.sleep(.1)
+            count=count+1        
+    return Response(chunk_sequence2(), mimetype='text/plain')
 
 
 
@@ -221,7 +258,7 @@ def errorhandler(exc):
     print('Exception:', exc)
 
 
-@app.route('/paginas')
+@app.route('/api/paginas')
 def mainsearch(lands,
     fromm=datetime.datetime(year=1996, month=1, day=1),
     to=datetime.datetime(year=2020, month=1, day=10),
@@ -249,18 +286,30 @@ def mainsearch(lands,
     #print(len(search_result))
     return "bro"
 
-def ExecuteQuery(con,query,more=None):
-                 
-    cursor = con.cursor(pymysql.cursors.DictCursor)
-    print(con.open,file=sys.stderr)
+def ExecuteQuery(state,query,more=None):
+
+    if state.con.open==False:
+        state.con = pymysql.connect(credentials.server,credentials.user,credentials.pw, credentials.db)
+
+    
+
+    cursor = state.con.cursor(pymysql.cursors.DictCursor)
+    print(state.con.open,file=sys.stderr)
     print(cursor,file=sys.stderr)
-    print(con.cursor,file=sys.stderr)
+    print(state.con.cursor,file=sys.stderr)
 
     if more is not None:
         cursor.execute(query, more)
     else:
         cursor.execute(query)
                  
-    con.commit()
+    state.con.commit()
     return cursor.fetchall()
     
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path>')
+def catch_all(path):
+    print("YEESS")
+    return app.send_static_file('index.html')
