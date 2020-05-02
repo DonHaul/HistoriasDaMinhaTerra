@@ -1,15 +1,32 @@
 html {
   scroll-behavior: smooth;
+  
+}
+
+body{
+  background-color: #f3f5f7;
 }
 
 .App {
   text-align: center;
+  
 }
+
+
 
 .navbar{
   height: 53px;
-  background-color: blue;
 
+
+}
+
+
+.logo{
+  display: inline-block;
+  width: 30px;
+  margin-right: 10px;
+  margin-bottom: 2px;
+  vertical-align: middle;
 }
 
 .MainApp{
@@ -33,6 +50,109 @@ text-align: center;
   background: linear-gradient(120deg,#3c82ea,#5c7ffc);
   color: #fff;
 }
+
+
+h1{
+  text-align: left;
+  
+}
+
+h4{
+  display: inline-block;
+  width: auto;
+  color: #333;
+  margin-top: 50px;
+  padding-bottom: 3px;
+  border-bottom: 5px solid #3c82ea;
+}
+
+.btn-primary{
+  background-color: #3c82ea;
+}
+.datebtns button{
+  margin: 0;
+  padding: 0;
+  width: 30px;
+}
+.datebtns button i{
+  font-size: 16px;
+  
+  margin-top:0px!important;
+
+}
+
+h3{
+  display: inline-block;
+  width: auto;
+  color: #333;
+  margin-top: 10px;
+  margin-bottom: 30px;
+  padding-bottom: 3px;
+  border-bottom: 5px solid #3c82ea;
+}
+
+h5{
+  display: block;
+  width: auto;
+  color: #333;
+  margin-top: 0px;
+  padding-bottom: 3px;
+  border-bottom: 5px solid #3c82ea;
+  text-align: left;
+}
+
+.card{
+  background-color:rgb(255, 255, 255) ;
+}
+
+
+
+@media (min-width: 768px) {
+  .container-small {
+      width: 500px;
+      
+  }
+  .container-large {
+      width: 970px;
+  } 
+} 
+@media (min-width: 992px) {
+  .container-small {
+      width: 700px;
+  }
+  .container-large {
+      width: 1170px;
+  } 
+} 
+@media (min-width: 1200px) {
+  .container-small {
+      width: 1000px;
+  }
+  .container-large {
+      width: 1500px;
+  } 
+}
+
+
+.container-small, .container-large {
+  max-width: 90%;
+  margin: 0 auto;
+  margin-top: 100px;
+  text-align: justify;
+  box-shadow: 0 3px 6px rgba(0,0,0,.12), 0 3px 6px rgba(0,0,0,0);
+  border: none;
+
+}
+
+.card{
+  padding:  30px 100px;
+}
+
+.navbar-collapse{
+  background: linear-gradient(120deg,#3c82ea,#5c7ffc);
+
+}
+
 
 
 .App-logo {
@@ -59,14 +179,48 @@ text-align: center;
 
 .exsitediv{
   position: relative;
+  
+  
+}
+
+.exsitediv div .iframedivv{
+  background-color: #ddd;
+  height: 90vh;
+}
+
+.exsitediv div .iframedivv p{
+  margin: auto;
+}
+
+.iframecontainer{
+  position: relative;
+  
+}
+
+.extSite .big{
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  font-size: 40px;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+}
+
+.clicktoopen{
+  position: relative;
+  margin-bottom: -50vh;
+  color: white!important;
+  padding: 20px 30px;
 }
 
 .secret{
   position: absolute;
   width: 100%;
   height: 100%;
-
+  
   cursor: pointer;
+  vertical-align:middle;
 }
 
 .App-link {
@@ -76,16 +230,40 @@ text-align: center;
 .cont{
   margin-top: 50px;
 }
+.map{position: relative;}
 
 .land:hover{
   background-color: rgb(240, 240, 240);
   cursor: pointer;
 }
+
+.landselected{
+  background-color: rgb(220, 220, 220);
+}
+
 .land p{
   margin-bottom: 0px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
+.story p{
+  margin-bottom: 0px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.date{
+  opacity: 0;
+  font-size: 14px;
+  opacity: .2;
+}
+.story:hover{
+  background-color: rgb(240, 240, 240);
+  cursor: pointer;
+}
+.story:hover > div .date {opacity: .7; }
+
 
 .landnews div{
   display: inline;
@@ -93,23 +271,59 @@ text-align: center;
 
 .extSite{
   width: 100%;
-  min-height: 100vh;
+  min-height: 90vh;
   border:none;
 }
 
 iframe{
-  overflow: hidden;
+  width: 100%;
+  height: 80vh;
+  border: none;
 }
+
+.histcontainer{
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+
+/* width */
+.histcontainer::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+.histcontainer::-webkit-scrollbar-track {
+  background-color: #dedede;
+  border-radius: 10px;
+}
+
+/* Handle */
+.histcontainer::-webkit-scrollbar-thumb {
+  background: gray;
+  border-radius: 10px;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: #dedede;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: gray;
+  border-radius: 10px;
+}
+
 
 .newscont{
   min-height: 100vh;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  margin-top: 30px;
 }

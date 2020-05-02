@@ -3,11 +3,13 @@ import time
 import sys
 import json 
 
+from flask_cors import CORS
 
 app = Flask(__name__,static_folder='./build',static_url_path='/')
+cors = CORS(app)
 
-domains = ['http://www.publico.pt/']
-#[, 'http://www.dn.pt/', 'http://www.rtp.pt/', 'http://www.cmjornal.xl.pt/', 'http://www.iol.pt/', 'http://www.tvi24.iol.pt/', 'http://noticias.sapo.pt/', 'http://expresso.sapo.pt/', 'http://sol.sapo.pt/', 'http://www.jornaldenegocios.pt/', 'http://abola.pt/', 'http://www.jn.pt/', 'http://sicnoticias.sapo.pt/', 'http://www.lux.iol.pt/', 'http://www.ionline.pt/', 'http://news.google.pt/', 'http://www.dinheirovivo.pt/', 'http://www.aeiou.pt/', 'http://www.tsf.pt/', 'http://meiosepublicidade.pt/', 'http://www.sabado.pt/', 'http://dnoticias.pt/', 'http://economico.sapo.pt/' ]
+
+domains = ['http://www.publico.pt/', 'http://www.dn.pt/', 'http://www.rtp.pt/', 'http://www.cmjornal.xl.pt/', 'http://www.iol.pt/', 'http://www.tvi24.iol.pt/', 'http://noticias.sapo.pt/', 'http://expresso.sapo.pt/', 'http://sol.sapo.pt/', 'http://www.jornaldenegocios.pt/', 'http://abola.pt/', 'http://www.jn.pt/', 'http://sicnoticias.sapo.pt/', 'http://www.lux.iol.pt/', 'http://www.ionline.pt/', 'http://news.google.pt/', 'http://www.dinheirovivo.pt/', 'http://www.aeiou.pt/', 'http://www.tsf.pt/', 'http://meiosepublicidade.pt/', 'http://www.sabado.pt/', 'http://dnoticias.pt/', 'http://economico.sapo.pt/' ]
 
 
 import random
@@ -34,6 +36,7 @@ class State(object):
         self.count=0
         self.initiallandstoget=20
         self.landstoget=self.initiallandstoget
+        self.cursor=self.con.cursor(pymysql.cursors.DictCursor)
 
 state = State()
 
@@ -90,6 +93,8 @@ def contammehistoriasapi(params=None):
         
         params['siteSearch']=params['siteSearch'].split(',')
 
+    print(params)
+
     if 'to' not in params:
         params['to']=datetime.datetime(year=2020, month=1, day=10)
 
@@ -137,8 +142,8 @@ class MyPool(pool.Pool):
     Process = NoDaemonProcess
 
 
-@app.route('/api/artigosaqui')
-def get_articleshere(params=None):
+@app.route('/api/artigosstream')
+def get_articlesstream(params=None):
 
     state.chunks=[]
     state.count=0
@@ -176,8 +181,8 @@ def get_articleshere(params=None):
     def chunk_sequence(lands):
 
         
-        print('DUMPING CHUNK',file=sys.stderr)
-        print('DUMPING CHUNK',lands,file=sys.stderr)
+        #print('DUMPING CHUNK',file=sys.stderr)
+        #print('DUMPING CHUNK',lands,file=sys.stderr)
         yield  json.dumps(lands) 
         print('DUMPING CHUNKED',file=sys.stderr)
 
@@ -185,9 +190,9 @@ def get_articleshere(params=None):
         while state.count< state.landstoget or len(state.chunks)==0:
             print('CHUNKS',state.count,'/',state.landstoget, file=sys.stderr)
             if(len(state.chunks)>0):
-                print("CHUNKIN")
-                print(state.chunks)
-                yield '{"payload":'  + json.dumps(state.chunks) + "},"
+                #print("CHUNKIN")
+                #print(state.chunks)
+                yield  json.dumps(state.chunks)
                 state.chunks=[]
             #if results available  yield
             time.sleep(0.5)
@@ -218,6 +223,59 @@ def get_articleshere(params=None):
 
     print('DUMPING READY',file=sys.stderr)
 
+    #yield({'payload':results})
+    return Response(chunk_sequence(lands), mimetype='text/plain')
+
+
+
+
+@app.route('/api/artigosaqui')
+def get_articleshere(params=None):
+
+    state.chunks=[]
+    state.count=0
+
+    #http://localhost:5000/artigosaqui?bounds=39.071611;-8.882339;38.604698;-9.691292
+    if params is None:
+        params={}
+        for k in request.args:
+            print(k); 
+            params[k]=request.args[k]
+    
+    if 'siteSearch' not in params:
+        params['siteSearch'] = domains
+
+    up, left, right, down =params['bounds'].split(';')
+
+    lands = get_landshere(up,right,left,down)
+
+
+    #if len(lands['payload'])<state.initiallandstoget:
+    #    state.landstoget=len(lands['payload'])
+    #else:
+    #     state.landstoget=state.initiallandstoget
+    #lands = random.sample(lands['payload'],state.landstoget)       
+    
+    #lands = [land for land in lands if Rewritelandstr(land)]
+    
+    def myconverter(o):
+        if isinstance(o, datetime.datetime):
+            return o.__str__()
+    
+    def chunk_sequence(lands):
+        
+        #print('DUMPING CHUNK',file=sys.stderr)
+        #print('DUMPING CHUNK',lands,file=sys.stderr)
+        yield  json.dumps(lands) 
+        print('DUMPING CHUNKED',file=sys.stderr)
+
+        #print(lands,file=sys.stderr)
+        for l in lands['payload']:
+
+            res = ExecuteQuery(state,"SELECT headline,link,date FROM has_news m  CROSS JOIN news n ON n.newsID = news_id WHERE territories_id={} ORDER BY n.date ASC".format(l['id']))
+       
+            yield json.dumps({'payload':{'land_id':l['id'],'articles':res}},default=myconverter)
+   
     #yield({'payload':results})
     return Response(chunk_sequence(lands), mimetype='text/plain')
 
@@ -291,20 +349,22 @@ def ExecuteQuery(state,query,more=None):
     if state.con.open==False:
         state.con = pymysql.connect(credentials.server,credentials.user,credentials.pw, credentials.db)
 
+        state.cursor=state.con.cursor(pymysql.cursors.DictCursor)
+
     
 
-    cursor = state.con.cursor(pymysql.cursors.DictCursor)
-    print(state.con.open,file=sys.stderr)
-    print(cursor,file=sys.stderr)
-    print(state.con.cursor,file=sys.stderr)
+    
+    #print(state.con.open,file=sys.stderr)
+    #print(cursor,file=sys.stderr)
+    #print(state.con.cursor,file=sys.stderr)
 
     if more is not None:
-        cursor.execute(query, more)
+        state.cursor.execute(query, more)
     else:
-        cursor.execute(query)
+        state.cursor.execute(query)
                  
     state.con.commit()
-    return cursor.fetchall()
+    return state.cursor.fetchall()
     
 
 

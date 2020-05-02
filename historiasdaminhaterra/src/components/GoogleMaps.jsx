@@ -6,8 +6,10 @@ import { AppContext } from "../components/state"
 const GOOGLE_MAP_API_KEY = 'AIzaSyAGpEsuzCwWOMF0hoMJTrD6r0YE5yUb8ds';
 const myLocation = { // CN Tower Landmark
 
+  //lat: 39.958648,
+  //lng: -12.662424,
   lat: 39.958648,
-  lng: -12.662424,
+  lng: -9.662424,
 
 
 };
@@ -26,7 +28,6 @@ function GoogleMaps(props) {
   const marker = useRef(null);
   const firstUpdate = useRef(0);
 
-  const [loaded, setload] = useState(false)
 
   // useEffect Hook
   useEffect(() => {
@@ -34,7 +35,7 @@ function GoogleMaps(props) {
     //console.log(firstUpdate.current)
 
     firstUpdate.current++;
-    if (firstUpdate.current != 2) {
+    if (firstUpdate.current != 1) {
 
 
       return;
@@ -57,7 +58,7 @@ function GoogleMaps(props) {
 
       googleMap.current = createGoogleMap();
       //marker.current = createMarker()
-      setload(true);
+
     })
 
 
@@ -67,7 +68,7 @@ function GoogleMaps(props) {
       console.log("lol");
       console.log(googleMapRef.current);
       var map = new window.google.maps.Map(googleMapRef.current, {
-        zoom: 7,
+        zoom: 10,
         center: {
           lat: myLocation.lat,
           lng: myLocation.lng
@@ -80,6 +81,7 @@ function GoogleMaps(props) {
         scaleControl: true,
 
       });
+      console.log("MAPPY BOY");
 
       console.log(map);
       //after load, set up listeners
@@ -93,10 +95,10 @@ function GoogleMaps(props) {
           const bounds = map.getBounds()
           var ne = bounds.getNorthEast();
           var sw = bounds.getSouthWest();
-          console.log(ne.lat());
+          /*console.log(ne.lat());
           console.log(ne.lng());
           console.log(sw.lat());
-          console.log(sw.lng());
+          console.log(sw.lng());*/
           const viewportPoints = [ne.lat(), ne.lng(), sw.lat(), sw.lng()]
           dispatch({ type: 'BOUNDS_CHANGED', payload: viewportPoints });
           //this part runs when the mapobject shown for the first time
