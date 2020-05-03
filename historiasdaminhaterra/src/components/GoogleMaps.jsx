@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext, useState } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import { AppContext } from "../components/state"
 
 
@@ -8,15 +8,13 @@ const myLocation = { // CN Tower Landmark
 
   //lat: 39.958648,
   //lng: -12.662424,
-  lat: 39.958648,
-  lng: -9.662424,
-
-
+  lat: 38.736211,
+  lng: -9.123981
 };
 // styles
 const mapStyles = {
   width: '100%',
-  height: '400px',
+  height: '550px',
 };
 
 function GoogleMaps(props) {
@@ -25,7 +23,7 @@ function GoogleMaps(props) {
   // refs
   const googleMapRef = React.createRef();
   const googleMap = useRef(null);
-  const marker = useRef(null);
+  let marker = null;// = useRef(null);
   const firstUpdate = useRef(0);
 
 
@@ -35,7 +33,7 @@ function GoogleMaps(props) {
     //console.log(firstUpdate.current)
 
     firstUpdate.current++;
-    if (firstUpdate.current != 1) {
+    if (firstUpdate.current !== 1) {
 
 
       return;
@@ -57,7 +55,11 @@ function GoogleMaps(props) {
       console.log("Script loaded twice");
 
       googleMap.current = createGoogleMap();
-      //marker.current = createMarker()
+      //marker = createMarker(39.071611, -8.882339)
+
+
+      dispatch({ type: 'GET_MAP', payload: googleMap });
+
 
     })
 
@@ -85,39 +87,48 @@ function GoogleMaps(props) {
 
       console.log(map);
       //after load, set up listeners
-      window.google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
-        // 3 seconds after the center of the map has changed, pan back to the
-        // marker.
-        //
-        //
-        window.google.maps.event.addListener(map, 'bounds_changed', function () {
-          //console.log(map.getBounds());
-          const bounds = map.getBounds()
-          var ne = bounds.getNorthEast();
-          var sw = bounds.getSouthWest();
-          /*console.log(ne.lat());
-          console.log(ne.lng());
-          console.log(sw.lat());
-          console.log(sw.lng());*/
-          const viewportPoints = [ne.lat(), ne.lng(), sw.lat(), sw.lng()]
-          dispatch({ type: 'BOUNDS_CHANGED', payload: viewportPoints });
-          //this part runs when the mapobject shown for the first time
-        });
+
+      window.google.maps.event.addListener(map, 'bounds_changed', function () {
+        //console.log(map.getBounds());
+        const bounds = map.getBounds()
+        var ne = bounds.getNorthEast();
+        var sw = bounds.getSouthWest();
+        /*console.log(ne.lat());
+        console.log(ne.lng());
+        console.log(sw.lat());
+        console.log(sw.lng());*/
+        const viewportPoints = [ne.lat(), ne.lng(), sw.lat(), sw.lng()]
+        dispatch({ type: 'BOUNDS_CHANGED', payload: viewportPoints });
+        //this part runs when the mapobject shown for the first time
       });
+
+      window.google.maps.event.addListener(map, 'zoom_changed', function () {
+        //console.log(map.getBounds());
+        //marker.setMap(null);
+        console.log("zoomie")
+        //this part runs when the mapobject shown for the first time
+      });
+
 
       return map
     }
 
-    const createMarker = () =>
-      new window.google.maps.Marker({
-        position: { lat: myLocation.lat, lng: myLocation.lng },
-        map: googleMap.current
-      });
+
 
 
 
 
   }, [googleMapRef])
+
+  const createMarker = (latitutde, longitude) => {
+
+    return new window.google.maps.Marker({
+      position: { lat: latitutde, lng: longitude },
+      map: googleMap.current
+    });
+  }
+
+
 
 
 
@@ -132,6 +143,10 @@ function GoogleMaps(props) {
       /></React.Fragment>
   )
 
+
+
 }
+
+
 
 export default GoogleMaps

@@ -275,39 +275,54 @@ def get_articleshere(params=None):
             res = ExecuteQuery(state,"SELECT headline,link,date FROM has_news m  CROSS JOIN news n ON n.newsID = news_id WHERE territories_id={} ORDER BY n.date ASC".format(l['id']))
        
             yield json.dumps({'payload':{'land_id':l['id'],'articles':res}},default=myconverter)
+
+            #time.sleep(0.5)
    
     #yield({'payload':results})
     return Response(chunk_sequence(lands), mimetype='text/plain')
 
 
-@app.route('/api/stream')
-def get_stream(params=None):
- 
-    print('CALLED STREAM',file=sys.stderr)
-    def chunk_sequence2():
-        count = 0
-        while count<100:
-            print(count,file=sys.stderr)
-            yield "[{'id': 1405, 'name': 'Loures', 'type': 'C', 'parent_id': -1, 'lat': 38.833333, 'lng': -9.166667}, {'id': 1787, 'name': 'Montijo', 'type': 'C', 'parent_id': -1, 'lat': 38.683333, 'lng': -8.9}, {'id': 82, 'name': 'Alcochete', 'type': 'C', 'parent_id': -1, 'lat': 38.75, 'lng': -8.966667}, {'id': 1874, 'name': 'Odivelas', 'type': 'C', 'parent_id': -1, 'lat': 38.8, 'lng': -9.183333}, {'id': 361, 'name': 'Arruda dos Vinhos', 'type': 'C', 'parent_id': -1, 'lat': 38.983333, 'lng': -9.083333}, {'id': 2601, 'name': 'Seixal', 'type': 'C', 'parent_id': -1, 'lat': 38.65, 'lng': -9.1}, {'id': 137, 'name': 'Almada','type': 'C', 'parent_id': -1, 'lat': 38.666667, 'lng': -9.15}, {'id': 467, 'name': 'Barreiro', 'type': 'C', 'parent_id': -1, 'lat': 38.666667, 'lng': -9.1}, {'id': 2661, 'name': 'Sintra', 'type': 'C', 'parent_id': -1, 'lat': 38.783333, 'lng': -9.416667}, {'id': 90, 'name': 'Alenquer', 'type': 'C', 'parent_id': -1, 'lat': 39.056111, 'lng': -9.008056}, {'id': 2673, 'name': 'Sobral de Monte Agra�o', 'type': 'C', 'parent_id': -1, 'lat': 39.019722, 'lng': -9.148889}, {'id': 710, 'name': 'Cascais', 'type': 'C', 'parent_id': -1, 'lat': 38.683333, 'lng': -9.416667}, {'id': 1698, 'name': 'Moita', 'type': 'C', 'parent_id': -1, 'lat': 38.65, 'lng': -9.0}, {'id': 3010, 'name': 'Vila Franca de Xira', 'type': 'C', 'parent_id': -1, 'lat': 38.95, 'lng': -8.983333}, {'id': 1493, 'name': 'Mafra', 'type': 'C', 'parent_id': -1, 'lat': 38.933333, 'lng': -9.333333}, {'id': 182, 'name': 'Amadora', 'type': 'C', 'parent_id': -1, 'lat': 38.75, 'lng': -9.233333}, {'id': 1878, 'name': 'Oeiras', 'type': 'C', 'parent_id': -1, 'lat': 38.695833, 'lng': -9.309167}, {'id': 1370, 'name': 'Lisboa', 'type': 'D', 'parent_id': -1, 'lat': 38.716667, 'lng': -9.133333}]\n"
-            
-            time.sleep(.1)
-            count=count+1        
-    return Response(chunk_sequence2(), mimetype='text/plain')
+@app.route("/api/downloaddetails")
+def getPlotCSV(params=None):
 
+    #http://localhost:5000/artigosaqui?bounds=39.071611;-8.882339;38.604698;-9.691292
+    if params is None:
+        params={}
+        for k in request.args:
+            print(k); 
+            params[k]=request.args[k]    
 
+    up, left, right, down =params['bounds'].split(';')
 
+    lands = get_landshere(up,right,left,down)
 
+    ids=[]
+    for l in lands['payload']:
+        ids.append(l['id'])
 
+    idsstr = str(ids)[1:]
+    idsstr = idsstr[:-1]
 
-def generate():
-    yield 'Hello '
-    time.sleep(1)
-    yield 'Hello '
-    time.sleep(1) 
-    yield 'Hello '
-    time.sleep(1)
-    yield 'Hello '
-    time.sleep(1)
+    
+    res = ExecuteQueryFetch(state,"SELECT * FROM has_news m  INNER JOIN news n ON n.newsID = news_id INNER JOIN territories t ON t.id =m.territories_id  WHERE t.id IN ({}) ORDER BY t.name, n.date ASC".format(idsstr),dicty=True)
+
+    csvstr = "Nome do Concelho;Data;Manchete;Link\n"
+
+    while True:
+        row = res.fetchone()
+        if row==None:
+            break
+        if row == None:
+            break
+        print(row['headline'])
+        csvstr = csvstr +"{};{};{};https://arquivo.pt/wayback/{}\n".format(row['name'],row['date'],row['headline'],row['link'])
+    
+    return Response(
+        csvstr.encode('utf-8-sig'),
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                 "attachment; filename=area_articles.csv"})
+
  
 
 def errorhandler(exc):
@@ -344,12 +359,15 @@ def mainsearch(lands,
     #print(len(search_result))
     return "bro"
 
-def ExecuteQuery(state,query,more=None):
+def ExecuteQuery(state,query,more=None,dicty=True):
 
     if state.con.open==False:
         state.con = pymysql.connect(credentials.server,credentials.user,credentials.pw, credentials.db)
 
-        state.cursor=state.con.cursor(pymysql.cursors.DictCursor)
+        if dicty == True:
+            state.cursor=state.con.cursor(pymysql.cursors.DictCursor)
+        else:
+            state.cursor=state.con.cursor(pymysql.cursors.Cursor)
 
     
 
@@ -365,6 +383,31 @@ def ExecuteQuery(state,query,more=None):
                  
     state.con.commit()
     return state.cursor.fetchall()
+
+def ExecuteQueryFetch(state,query,more=None,dicty=True):
+
+    if state.con.open==False:
+        state.con = pymysql.connect(credentials.server,credentials.user,credentials.pw, credentials.db)
+
+    if dicty:
+        state.cursor=state.con.cursor(pymysql.cursors.DictCursor)
+    else:
+        state.cursor=state.con.cursor(pymysql.cursors.Cursor)
+
+    
+
+    
+    #print(state.con.open,file=sys.stderr)
+    #print(cursor,file=sys.stderr)
+    #print(state.con.cursor,file=sys.stderr)
+
+    if more is not None:
+        state.cursor.execute(query, more)
+    else:
+        state.cursor.execute(query)
+                    
+    state.con.commit()
+    return state.cursor
     
 
 

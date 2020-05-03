@@ -17,7 +17,8 @@ import Header from "./components/Header"
 // Set up Initial State
 const initialState = {
 
-  bounds: [39.071611, -8.882339, 38.604698, -9.691292],
+  bounds: [39.039197929202835, -7.955188405393063, 38.45010514155955, -10.578723595170676],
+  queriedbounds: [],
   lands: [],
   dates: [1996, 2020],
   /*
@@ -35,12 +36,16 @@ const initialState = {
   }],*/
   selectedLand: -1,
   selectedStory: -1,
-  stories: []
+  stories: [],
+  markers: [],
+  map: null
 
 };
 
+
+
 //it returns the new state
-function reducer(draft, action) {
+const reducer = (draft, action) => {
   const { payload } = action
   switch (action.type) {
     case 'BOUNDS_CHANGED':
@@ -53,7 +58,7 @@ function reducer(draft, action) {
 
     case 'SEE_LAND_NEWS':
       console.log("CHANGED LAND");
-
+      console.log(payload);
       draft.selectedLand = payload;
 
 
@@ -61,17 +66,20 @@ function reducer(draft, action) {
     case 'SWITCH_STORY':
       draft.selectedStory = payload
       return draft;
+
     case 'RECEIVED_LANDS':
+
       console.log("NEW LANDS COMING IN");
 
-
-      draft.lands = payload.payload
+      draft.lands = payload.lands.payload;
+      draft.markers = payload.markers;
 
       //console.log(draft.lands);
       return draft;
 
     case 'LOAD_STORIES':
-      //console.log("NEW STORIES COMING IN");
+
+      console.log("NEW STORIES COMING IN");
       //console.log("stories");
 
       const found_land_id = draft.lands.findIndex(element => element.id === payload.payload.land_id);
@@ -83,7 +91,17 @@ function reducer(draft, action) {
       //slice makes clone on incoming array
       draft.dates = action.payload.slice();
 
+      return draft
+    case 'CHANGE_QUERYBOUNDS':
+      //slice makes clone on incoming array
+      draft.queriedbounds = action.payload;
 
+      return draft
+    case 'GET_MAP':
+      //slice makes clone on incoming array
+      draft.map = action.payload;
+
+      return draft
     //draft.dates = payload;
 
 
@@ -92,7 +110,10 @@ function reducer(draft, action) {
     default:
       return draft;
   }
+
 }
+
+
 
 function App() {
 
