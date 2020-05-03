@@ -4,5 +4,5 @@ O Histórias da miha terra é uma aplicação web que permite a qualquer um, pes
 O https://www.historiasdaminhaterra.pt/
 
 
-## API publica
+## API pública
 Em Construção... 
