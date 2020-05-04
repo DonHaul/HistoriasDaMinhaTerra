@@ -11,7 +11,8 @@ function Header(props) {
                 <ul className="nav navbar-nav ml-auto">
                     <li className="nav-item" role="presentation"><NavLink exact to="/" className="nav-link">Home</NavLink></li>
                     <li className="nav-item" role="presentation"><NavLink to="/sobre" className="nav-link"  >Sobre</NavLink></li>
-                    <li className="nav-item" role="presentation"><NavLink to="/endpoints" className="nav-link"  >API</NavLink></li>
+                    {/*<li className="nav-item" role="presentation"><NavLink to="/endpoints" className="nav-link"  >API</NavLink></li>*/}
+                    <li className="nav-item"><a className="nav-link" target="_blank" href="https://github.com/DonHaul/HistoriasDaMinhaTerra">API</a></li>
                     <li className="nav-item" role="presentation"><NavLink to="/contato" className="nav-link"  >Contato</NavLink></li>
                 </ul>
             </div>

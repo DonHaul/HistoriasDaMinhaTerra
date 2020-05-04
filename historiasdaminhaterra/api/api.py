@@ -50,7 +50,7 @@ def get_time():
 
 
 @app.route('/api/lugares/<up>/<right>/<left>/<down>/<landtype>')
-@app.route('/api/lugares/<up>/<right>/<left>/<down>')
+@app.route('/api/lugares/<up>/<right>/<down>/<left>')
 def get_landshere(up,right,left,down,landtype=None):
 
     if landtype==None:
@@ -249,15 +249,10 @@ def get_articleshere(params=None):
 
     lands = get_landshere(up,right,left,down)
 
+    if len(lands['payload'])>30:
+        pays = random.sample(lands['payload'],30)  
+        lands['payload']=pays
 
-    #if len(lands['payload'])<state.initiallandstoget:
-    #    state.landstoget=len(lands['payload'])
-    #else:
-    #     state.landstoget=state.initiallandstoget
-    #lands = random.sample(lands['payload'],state.landstoget)       
-    
-    #lands = [land for land in lands if Rewritelandstr(land)]
-    
     def myconverter(o):
         if isinstance(o, datetime.datetime):
             return o.__str__()

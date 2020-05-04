@@ -59,7 +59,15 @@ const reducer = (draft, action) => {
     case 'SEE_LAND_NEWS':
       console.log("CHANGED LAND");
       console.log(payload);
-      draft.selectedLand = payload;
+
+      //in case of error
+      if (payload > draft.lands.length) {
+        draft.selectedLand = -1;
+      } else {
+        draft.selectedLand = payload;
+      }
+
+
 
 
       return draft;
@@ -95,6 +103,11 @@ const reducer = (draft, action) => {
     case 'CHANGE_QUERYBOUNDS':
       //slice makes clone on incoming array
       draft.queriedbounds = action.payload;
+
+      //reset land and story upon new search
+      draft.selectedLand = -1;
+      draft.selectedStory = -1;
+
 
       return draft
     case 'GET_MAP':

@@ -322,6 +322,26 @@ iframe{
   width: 5px;
 }
 
+.networks{
+  font-size: 40px;
+  color: #3c82ea;
+  text-align: center;
+}
+.networks i{
+  margin: 0 10px;
+}
+
+.networks i:hover{
+  color: #355c97;
+}
+.me{
+  display: block;
+  margin: 0 auto;
+  width: 300px;
+  height: 300px;
+  border-radius:999999999999px;
+}
+
 /* Track */
 .histcontainer::-webkit-scrollbar-track {
   background-color: #dedede;
