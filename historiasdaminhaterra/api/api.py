@@ -19,10 +19,11 @@ import pandas as pd
 import datetime
 import multiprocessing
 from multiprocessing import pool
+'''
 from TemporalSummarizationFramework.contamehistorias.datasources.webarchive import ArquivoPT
 from TemporalSummarizationFramework.contamehistorias.engine import TemporalSummarizationEngine
 from TemporalSummarizationFramework.contamehistorias.datasources.utils import *
-
+'''
 import credentials
 
 
@@ -76,7 +77,7 @@ def get_land(lugar):
     return {'payload' : placeinfo}
 
 
-
+'''
 @app.route('/api/contamehistorias')
 def contammehistoriasapi(params=None):
     '''
@@ -115,7 +116,7 @@ def contammehistoriasapi(params=None):
     serializedintervals['land']=params['land']
     #print('GOT RESUTLS FOR',params['q'],len(state.chunks) , file=sys.stderr)
     return serializedintervals
-
+'''
 def Rewritelandstr(land):
     return True
 
@@ -326,33 +327,7 @@ def errorhandler(exc):
     print('Exception:', exc)
 
 
-@app.route('/api/paginas')
-def mainsearch(lands,
-    fromm=datetime.datetime(year=1996, month=1, day=1),
-    to=datetime.datetime(year=2020, month=1, day=10),
-    domains=domains,q=None):
 
-    params = { 'domains':domains, 
-        'from':fromm, 
-        'to': to}
-
-    print("yyesss")
-    for k in request.args:
-        print(k);
-        params[k]=request.args[k]
-
-    print(params)
-     
-    
-
-    #query = d 
-
-    apt =  ArquivoPT()
-    #search_result = apt.getResult(query=query, **params)
-
-    
-    #print(len(search_result))
-    return "bro"
 
 def ExecuteQuery(state,query,more=None,dicty=True):
 
