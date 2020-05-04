@@ -110,7 +110,7 @@ function Page_sobre() {
 
                     </div>
                     <h4>Agradecimentos</h4>
-                    <p>A equipa do <i>Histórias da Minha Terra</i> gostaria de agradecer ao <a href="https://arquivo.pt/">Arquivo.pt</a> pela disponibilidade ínfima de resultados e ao <a href="https://github.com/LIAAD/TemporalSummarizationFramework">LIAAD</a> pela disponibilização de uma ferramenta open-source que facilitou bastante a obtenção de grandes quantidades de páginas do arquivo.pt e pela sua ferramente de sumarização temporal <i>TemporalSummarizationFramework</i>.</p>
+                    <p>A equipa do <i>Histórias da Minha Terra</i> gostaria de agradecer ao <a href="https://arquivo.pt/">Arquivo.pt</a> pela disponibilidade ínfima de resultados e ao <a href="https://github.com/LIAAD/TemporalSummarizationFramework">LIAAD</a> pela disponibilização de uma ferramenta open-source que facilitou bastante a obtenção de grandes quantidades de páginas do arquivo.pt e pelas sua capacidades ferramenta <i>YAKE</i> com capacidade de selecionar as notícias mais relevantes.</p>
                 </div>
             </div>
         </div>

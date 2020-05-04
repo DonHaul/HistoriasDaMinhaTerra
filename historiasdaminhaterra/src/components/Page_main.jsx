@@ -135,7 +135,7 @@ function Page_main() {
 
 
     let boundstr = state.queriedbounds.join(';')
-    let specialurl = 'http://localhost:5000/api/downloaddetails?bounds=' + boundstr
+    let specialurl = '/api/downloaddetails?bounds=' + boundstr
 
     return (
         <React.Fragment>
@@ -186,10 +186,12 @@ function Page_main() {
                                 }> <p style={{ textAlign: "left" }} className="animated fadeInUp">{item.name}</p></div>)
                             })}
 
+                            <br />
+                            {state.queriedbounds.length === 4 &&
+                                <a type="button" href={specialurl} className="btn btn-primary downloadbtn">Descarregar Histórias <i className="fas fa-file-download"></i></a>}
                         </div>
-                        <br />
-                        {state.queriedbounds.length === 4 &&
-                            <a type="button" href={specialurl} className="btn btn-primary downloadbtn">Descarregar Histórias <i className="fas fa-file-download"></i></a>}
+
+
 
                     </div>
                     <div className="col-9">
@@ -271,7 +273,7 @@ function Page_main() {
 
         console.log('FETCHING LANDS NOW');
 
-        let url = 'http://localhost:5000/api/artigosaqui?bounds=' + boundstr
+        let url = '/api/artigosaqui?bounds=' + boundstr
         console.log(url);
 
 

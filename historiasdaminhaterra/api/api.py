@@ -1,24 +1,25 @@
-from flask import Flask,request,Response
+from flask import Flask,request,Response,send_from_directory
 import time
 import sys
 import json 
-
+import os
 from flask_cors import CORS
 
-app = Flask(__name__,static_folder='./build',static_url_path='/')
+app = Flask(__name__,static_folder='./build',static_url_path='')
 cors = CORS(app)
+
 
 
 domains = ['http://www.publico.pt/', 'http://www.dn.pt/', 'http://www.rtp.pt/', 'http://www.cmjornal.xl.pt/', 'http://www.iol.pt/', 'http://www.tvi24.iol.pt/', 'http://noticias.sapo.pt/', 'http://expresso.sapo.pt/', 'http://sol.sapo.pt/', 'http://www.jornaldenegocios.pt/', 'http://abola.pt/', 'http://www.jn.pt/', 'http://sicnoticias.sapo.pt/', 'http://www.lux.iol.pt/', 'http://www.ionline.pt/', 'http://news.google.pt/', 'http://www.dinheirovivo.pt/', 'http://www.aeiou.pt/', 'http://www.tsf.pt/', 'http://meiosepublicidade.pt/', 'http://www.sabado.pt/', 'http://dnoticias.pt/', 'http://economico.sapo.pt/' ]
 
 
+
 import random
-import sqlalchemy as sa
 import pymysql
-import pandas as pd
+#import pandas as pd
 import datetime
-import multiprocessing
-from multiprocessing import pool
+#import multiprocessing
+#from multiprocessing import pool
 '''
 from TemporalSummarizationFramework.contamehistorias.datasources.webarchive import ArquivoPT
 from TemporalSummarizationFramework.contamehistorias.engine import TemporalSummarizationEngine
@@ -43,7 +44,9 @@ state = State()
 
 
 
-    
+@app.route('/favicon.ico')
+def fav():
+    return app.send_static_file('favicon.ico')
 
 @app.route('/api/time')
 def get_time():
@@ -80,10 +83,10 @@ def get_land(lugar):
 '''
 @app.route('/api/contamehistorias')
 def contammehistoriasapi(params=None):
-    '''
-    params must include, q, siteSearch, from and to
-    http://localhost:5000/contamehistorias?q=lisboa&siteSearch=https://www.publico.pt
-    '''
+    
+    #params must include, q, siteSearch, from and to
+    #http://localhost:5000/contamehistorias?q=lisboa&siteSearch=https://www.publico.pt
+    
 
     if params is None:
         params={}
@@ -129,6 +132,7 @@ def AddLandtoParam(params,land):
     return par
 
 #pools cant call other pools if they are daemonic
+'''
 class NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
     def _get_daemon(self):
@@ -227,7 +231,7 @@ def get_articlesstream(params=None):
     #yield({'payload':results})
     return Response(chunk_sequence(lands), mimetype='text/plain')
 
-
+'''
 
 
 @app.route('/api/artigosaqui')
@@ -302,7 +306,7 @@ def getPlotCSV(params=None):
     
     res = ExecuteQueryFetch(state,"SELECT * FROM has_news m  INNER JOIN news n ON n.newsID = news_id INNER JOIN territories t ON t.id =m.territories_id  WHERE t.id IN ({}) ORDER BY t.name, n.date ASC".format(idsstr),dicty=True)
 
-    csvstr = "Nome do Concelho;Data;Manchete;Link\n"
+    csvstr = "Nome do Concelho;Data;Título;Link\n"
 
     while True:
         row = res.fetchone()
@@ -381,8 +385,7 @@ def ExecuteQueryFetch(state,query,more=None,dicty=True):
     
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path>')
-def catch_all(path):
+@app.route('/')
+def catch_all():
     print("YEESS")
     return app.send_static_file('index.html')
