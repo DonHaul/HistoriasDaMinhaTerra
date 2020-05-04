@@ -141,10 +141,10 @@ function App() {
           <Header />
           <AppContext.Provider value={{ state, dispatch }}>
             <Switch>
-              <Route path="/" component={Page_main} exact />
               <Route path="/contato" component={Page_contacto} />
               <Route path="/endpoints" component={Page_api} />
               <Route path="/sobre" component={Page_sobre} />
+              <Route path="/" component={Page_main} exact />
             </Switch>
           </AppContext.Provider>
         </div >

@@ -5,7 +5,7 @@ import json
 import os
 from flask_cors import CORS
 
-app = Flask(__name__,static_folder='./build',static_url_path='')
+app = Flask(__name__,static_folder='./build',static_url_path='/')
 cors = CORS(app)
 
 
@@ -385,7 +385,17 @@ def ExecuteQueryFetch(state,query,more=None,dicty=True):
     
 
 
-@app.route('/')
-def catch_all():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
     print("YEESS")
     return app.send_static_file('index.html')
+
+
+
+@app.errorhandler(404) 
+  
+# inbuilt function which takes error as parameter 
+def not_found(e):   
+# defining function 
+  return app.send_static_file('index.html')

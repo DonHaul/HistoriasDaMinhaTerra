@@ -8,7 +8,7 @@ function Page_contacto() {
                 <div class="card-body">
                     <h4>Contacto</h4>
                     <p>Este projeto foi desenvolvida na íntegra por mim João Ramiro</p>
-                    <img className="me" src="joaoramiro.png"></img>
+                    <img className="me" src="/joaoramiro.png"></img>
                     <br />
                     <p>Para dúvidas, sugestões e feedbacks é favor contactar através de: <a href="mailto:mail@joaoramiro.pt"><b>mail@joaoramiro.pt</b></a></p>
                     <p>Eis outras plataformas onde me podem encontrar</p><p className="networks">
